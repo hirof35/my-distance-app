@@ -1,73 +1,24 @@
-# React + TypeScript + Vite
+# 2点間三角測量パッシブ計量アプリケーション
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+本プロジェクトは、2つの既知のGPS座標とそれぞれの地点から測定した方位角（コンパスヘディング）を利用し、前方交会法（インターセクション）を用いて遠方の対象物の座標および直線距離をピンポイントで特定するWeb/ネイティブハイブリッドアプリケーションです。
+<img width="1416" height="1040" alt="スクリーンショット 2026-06-03 105404" src="https://github.com/user-attachments/assets/e2177e09-d6a5-400b-9757-4fc9e6fba5fd" />
 
-Currently, two official plugins are available:
+## 🛠️ 技術スタック
+- **Frontend:** React (Vite), TypeScript
+- **Mapping:** Leaflet.js
+- **Mobile Native Bridge:** Capacitor (Geolocation, Motion API)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📐 数学的背景・構造
+地球の赤道半径を基準とした局所的な平面直角座標系（XY平面）への近似を行い、正接（$tan$）を用いた1次連立方程式の解から2直線の交点（対象物の緯度・経度）を算出しています。
 
-## React Compiler
+1. **座標系の変換:** 基準点1を原点 $(0,0)$ とし、経緯度差から基準点2のメートル単位座標 $(x_2, y_2)$ を導出
+2. **方位角の変換:** ナビゲーション方位（北=0°, 時計回り）から数学的座標系（東=0, 反時計回り）のラジアン放射角 $\theta$ への写像
+3. **交点計算:** $$y = \tan(\theta_1) \cdot x$$
+   $$y - y_2 = \tan(\theta_2) \cdot (x - x_2)$$
+   上記連立方程式より対象物のXY座標を特定後、逆変換をかけてターゲットのGPS座標を復元。
+4. **距離測定:** 復元されたターゲット座標と基準点1との間で三平方の定理を適用し、正確な実距離（メートル）を算出。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🚀 開発環境の起動
+```bash
+npm install
+npm run dev
